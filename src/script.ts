@@ -1,4 +1,4 @@
-type Point = { x: number, y: number };
+type Point = { x: number; y: number };
 type Triangle = [Point, Point, Point];
 type Mesh = Triangle[];
 
@@ -8,28 +8,28 @@ const canvasResolution = 100;
 const sampleFunction = (point: Point): number => {
     return Math.random() > 0.5 ? 1 : 0;
     // return point.x / sampleResolution;
-}
+};
 
 const getPoints = (): number[] => {
     const points: number[] = [];
     for (let x = 0; x < sampleResolution; x++) {
         for (let y = 0; y < sampleResolution; y++) {
-            points.push(sampleFunction({ x, y }))
+            points.push(sampleFunction({ x, y }));
         }
     }
 
     return points;
-}
+};
 
 const getSample = (point: Point, samples: number[]) => {
     return samples[point.x * sampleResolution + point.y];
-}
+};
 
 // 0---1
 // |   |
 // 3---2
-// TODO: rest of lookup
 type ShortMesh = number[][][];
+//prettier-ignore
 const MESHLOOKUP = ([
     [],
     [[[0, 0], [0.5, 0], [0, 0.5]]],
@@ -49,8 +49,6 @@ const MESHLOOKUP = ([
     [[[0, 0], [1, 0], [0, 1]], [[1, 1], [1, 0], [0, 1]]]
 ]).map(mesh => mesh.map(tri => tri.map(([x, y]) => ({ x, y }))));
 
-
-
 const marchTheCubes = (samples: number[]): Mesh => {
     const mesh: Mesh = [];
 
@@ -68,33 +66,31 @@ const marchTheCubes = (samples: number[]): Mesh => {
             const meshId = (TL << 0) + (TR << 1) + (BR << 2) + (BL << 3);
 
             const triangles = MESHLOOKUP[meshId];
-            console.log(meshId)
 
             // translate our mesh by the x and y
-            const translated = triangles.map(m => m.map(p => ({ x: p.x + x, y: p.y + y }))) as Mesh;
+            const translated = triangles.map((m) =>
+                m.map((p) => ({ x: p.x + x, y: p.y + y }))
+            ) as Mesh;
 
-            mesh.push(...translated)
+            mesh.push(...translated);
         }
     }
 
     return mesh;
-}
+};
 
 const meshToWorldCoord = (point: Point): Point => {
-    return { x: (point.x + 1) * canvasResolution, y: (point.y + 1) * canvasResolution }
-}
+    return { x: (point.x + 1) * canvasResolution, y: (point.y + 1) * canvasResolution };
+};
 
 const render = (points: number[], ctx: CanvasRenderingContext2D) => {
     // draw the mesh
     const mesh = marchTheCubes(points);
-    ctx.fillStyle = 'red'
-
-
-
+    ctx.fillStyle = 'red';
 
     // debugger;
     for (const triangle of mesh) {
-        const v = triangle.map(p => meshToWorldCoord(p));
+        const v = triangle.map((p) => meshToWorldCoord(p));
         ctx.beginPath();
 
         ctx.moveTo(v[0].x, v[0].y);
@@ -103,8 +99,6 @@ const render = (points: number[], ctx: CanvasRenderingContext2D) => {
 
         ctx.fill();
     }
-
-
 
     // draw the points
     for (let x = 0; x < sampleResolution; x++) {
@@ -121,8 +115,7 @@ const render = (points: number[], ctx: CanvasRenderingContext2D) => {
             ctx.stroke();
         }
     }
-
-}
+};
 
 const main = () => {
     const sampledPoints = getPoints();
@@ -131,6 +124,6 @@ const main = () => {
     canvas.width = canvas.height = (sampleResolution + 1) * canvasResolution;
 
     render(sampledPoints, ctx);
-}
+};
 
 main();

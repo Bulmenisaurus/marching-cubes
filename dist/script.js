@@ -46,8 +46,9 @@
         const BR = getSample({ x: x + 1, y: y + 1 }, samples);
         const meshId = (TL << 0) + (TR << 1) + (BR << 2) + (BL << 3);
         const triangles = MESHLOOKUP[meshId];
-        console.log(meshId);
-        const translated = triangles.map((m) => m.map((p) => ({ x: p.x + x, y: p.y + y })));
+        const translated = triangles.map(
+          (m) => m.map((p) => ({ x: p.x + x, y: p.y + y }))
+        );
         mesh.push(...translated);
       }
     }
