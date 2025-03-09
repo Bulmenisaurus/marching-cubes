@@ -2,15 +2,11 @@ type Point = { x: number, y: number };
 type Triangle = [Point, Point, Point];
 type Mesh = Triangle[];
 
-const sampleResolution = 10;
+const sampleResolution = 40;
 const canvasResolution = 100;
 
 const sampleFunction = (point: Point): number => {
-    if (point.x > 2 && point.x < 7 && point.y > 2 && point.y < 7) {
-        return 1;
-    } else {
-        return 0;
-    }
+    return Math.random() > 0.5 ? 1 : 0;
     // return point.x / sampleResolution;
 }
 
@@ -29,36 +25,34 @@ const getSample = (point: Point, samples: number[]) => {
     return samples[point.x * sampleResolution + point.y];
 }
 
+// 0---1
+// |   |
+// 3---2
 // TODO: rest of lookup
-const MESHLOOKUP: Mesh[] = [
+type ShortMesh = number[][][];
+const MESHLOOKUP = ([
     [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [[{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }], [{ x: 1, y: 1 }, { x: 1, y: 0, }, { x: 0, y: 1 }]]
-];
+    [[[0, 0], [0.5, 0], [0, 0.5]]],
+    [[[1, 0], [1, 0.5], [0.5, 0]]],
+    [[[0, 0], [1, 0], [0, 0.5]], [[1, 0], [0, 0.5], [1, 0.5]]],
+    [[[1, 1], [1, 0.5], [0.5, 1]]],
+    [[[0, 0], [0.5, 0], [0, 0.5]], [[1, 1], [1, 0.5], [0.5, 1]]],
+    [[[1, 0], [1, 1], [0.5, 1]], [[0.5, 0], [1, 0], [0.5, 1]]],
+    [[[0, 0], [1, 0], [0, 0.5]], [[1, 0], [0, 0.5], [1, 1]], [[0, 0.5], [1, 1], [0.5, 1]]],
+    [[[0, 1], [0, 0.5], [0.5, 1]]],
+    [[[0, 0], [0.5, 0], [0, 1]], [[0, 1], [0.5, 1], [0.5, 0]]],
+    [[[1, 0], [1, 0.5], [0.5, 0]], [[0, 1], [0, 0.5], [0.5, 1]]],
+    [[[0, 0], [1, 0], [0, 1]], [[0, 1], [1, 0], [0.5, 1]], [[1, 0], [0.5, 1], [1, 0.5]]],
+    [[[0, 0.5], [1, 0.5], [0, 1]], [[0, 1], [1, 0.5], [1, 1]]],
+    [[[0, 0], [1, 1], [0, 1]], [[0, 0,], [1, 1], [0.5, 0]], [[0.5, 0], [1, 0.5], [1, 1]]],
+    [[[0, 1], [1, 0], [1, 1]], [[0.5, 0], [0, 1], [1, 0]], [[0, 0.5], [0.5, 0], [0, 1]]],
+    [[[0, 0], [1, 0], [0, 1]], [[1, 1], [1, 0], [0, 1]]]
+]).map(mesh => mesh.map(tri => tri.map(([x, y]) => ({ x, y }))));
+
+
 
 const marchTheCubes = (samples: number[]): Mesh => {
     const mesh: Mesh = [];
-
-    mesh.push(
-        [
-            { x: 8, y: 9 },
-            { x: 9, y: 9 },
-            { x: 9, y: 8 }
-        ]
-    )
 
     // march through each group of 4 adjacent samples
     for (let x = 0; x < sampleResolution - 1; x++) {
@@ -116,7 +110,7 @@ const render = (points: number[], ctx: CanvasRenderingContext2D) => {
     for (let x = 0; x < sampleResolution; x++) {
         for (let y = 0; y < sampleResolution; y++) {
             const sample = getSample({ x, y }, points);
-            const brightness = Math.floor(sample * 255);
+            const brightness = Math.floor((1 - sample) * 255);
 
             ctx.beginPath();
             ctx.fillStyle = `rgb(${[brightness, brightness, brightness]})`;

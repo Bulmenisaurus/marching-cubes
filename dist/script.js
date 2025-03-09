@@ -1,14 +1,10 @@
 "use strict";
 (() => {
   // src/script.ts
-  var sampleResolution = 10;
+  var sampleResolution = 40;
   var canvasResolution = 100;
   var sampleFunction = (point) => {
-    if (point.x > 2 && point.x < 7 && point.y > 2 && point.y < 7) {
-      return 1;
-    } else {
-      return 0;
-    }
+    return Math.random() > 0.5 ? 1 : 0;
   };
   var getPoints = () => {
     const points = [];
@@ -24,31 +20,24 @@
   };
   var MESHLOOKUP = [
     [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [[{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }], [{ x: 1, y: 1 }, { x: 1, y: 0 }, { x: 0, y: 1 }]]
-  ];
+    [[[0, 0], [0.5, 0], [0, 0.5]]],
+    [[[1, 0], [1, 0.5], [0.5, 0]]],
+    [[[0, 0], [1, 0], [0, 0.5]], [[1, 0], [0, 0.5], [1, 0.5]]],
+    [[[1, 1], [1, 0.5], [0.5, 1]]],
+    [[[0, 0], [0.5, 0], [0, 0.5]], [[1, 1], [1, 0.5], [0.5, 1]]],
+    [[[1, 0], [1, 1], [0.5, 1]], [[0.5, 0], [1, 0], [0.5, 1]]],
+    [[[0, 0], [1, 0], [0, 0.5]], [[1, 0], [0, 0.5], [1, 1]], [[0, 0.5], [1, 1], [0.5, 1]]],
+    [[[0, 1], [0, 0.5], [0.5, 1]]],
+    [[[0, 0], [0.5, 0], [0, 1]], [[0, 1], [0.5, 1], [0.5, 0]]],
+    [[[1, 0], [1, 0.5], [0.5, 0]], [[0, 1], [0, 0.5], [0.5, 1]]],
+    [[[0, 0], [1, 0], [0, 1]], [[0, 1], [1, 0], [0.5, 1]], [[1, 0], [0.5, 1], [1, 0.5]]],
+    [[[0, 0.5], [1, 0.5], [0, 1]], [[0, 1], [1, 0.5], [1, 1]]],
+    [[[0, 0], [1, 1], [0, 1]], [[0, 0], [1, 1], [0.5, 0]], [[0.5, 0], [1, 0.5], [1, 1]]],
+    [[[0, 1], [1, 0], [1, 1]], [[0.5, 0], [0, 1], [1, 0]], [[0, 0.5], [0.5, 0], [0, 1]]],
+    [[[0, 0], [1, 0], [0, 1]], [[1, 1], [1, 0], [0, 1]]]
+  ].map((mesh) => mesh.map((tri) => tri.map(([x, y]) => ({ x, y }))));
   var marchTheCubes = (samples) => {
     const mesh = [];
-    mesh.push(
-      [
-        { x: 8, y: 9 },
-        { x: 9, y: 9 },
-        { x: 9, y: 8 }
-      ]
-    );
     for (let x = 0; x < sampleResolution - 1; x++) {
       for (let y = 0; y < sampleResolution - 1; y++) {
         const TL = getSample({ x: x + 0, y: y + 0 }, samples);
@@ -81,7 +70,7 @@
     for (let x = 0; x < sampleResolution; x++) {
       for (let y = 0; y < sampleResolution; y++) {
         const sample = getSample({ x, y }, points);
-        const brightness = Math.floor(sample * 255);
+        const brightness = Math.floor((1 - sample) * 255);
         ctx.beginPath();
         ctx.fillStyle = `rgb(${[brightness, brightness, brightness]})`;
         const circleCenter = meshToWorldCoord({ x, y });
