@@ -568,7 +568,7 @@
 
   // src/script.ts
   var import_noisejs = __toESM(require_noisejs());
-  var sampleResolution = 30;
+  var sampleResolution = 40;
   var canvasResolution = 100;
   var perlin = new import_noisejs.Noise(Math.random());
   var sampleFunction = (point) => {
@@ -666,7 +666,7 @@
     for (let x = 0; x < sampleResolution; x++) {
       for (let y = 0; y < sampleResolution; y++) {
         const sample = getSample({ x, y }, points);
-        const brightness = Math.floor((1 - sample) * 255);
+        const brightness = sample < 0 ? 255 : 0;
         ctx.beginPath();
         ctx.fillStyle = `rgb(${[brightness, brightness, brightness]})`;
         const circleCenter = meshToWorldCoord({ x, y });

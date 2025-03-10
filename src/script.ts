@@ -6,7 +6,7 @@ type Point = { x: number; y: number };
 type Triangle = [Point, Point, Point];
 type Mesh = Triangle[];
 
-const sampleResolution = 30;
+const sampleResolution = 40;
 const canvasResolution = 100;
 
 const perlin = new Noise(Math.random());
@@ -145,7 +145,7 @@ const render = (points: number[], ctx: CanvasRenderingContext2D) => {
     for (let x = 0; x < sampleResolution; x++) {
         for (let y = 0; y < sampleResolution; y++) {
             const sample = getSample({ x, y }, points);
-            const brightness = Math.floor((1 - sample) * 255);
+            const brightness = sample < 0 ? 255 : 0;
 
             ctx.beginPath();
             ctx.fillStyle = `rgb(${[brightness, brightness, brightness]})`;
