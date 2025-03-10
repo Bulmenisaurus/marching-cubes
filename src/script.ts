@@ -1,12 +1,19 @@
+//@ts-ignore
+import { Noise } from 'noisejs';
+declare const Noise: typeof import('noisejs');
+
 type Point = { x: number; y: number };
 type Triangle = [Point, Point, Point];
 type Mesh = Triangle[];
 
-const sampleResolution = 40;
+const sampleResolution = 30;
 const canvasResolution = 100;
 
+const perlin = new Noise(Math.random());
+
 const sampleFunction = (point: Point): number => {
-    return Math.random() > 0.5 ? 1 : 0;
+    // return Math.max(Math.random() - 0.5, 0);
+    return perlin.perlin2(point.x / 3, point.y / 3);
     // return point.x / sampleResolution;
 };
 
@@ -49,6 +56,30 @@ const MESHLOOKUP = ([
     [[[0, 0], [1, 0], [0, 1]], [[1, 1], [1, 0], [0, 1]]]
 ]).map(mesh => mesh.map(tri => tri.map(([x, y]) => ({ x, y }))));
 
+const interpolateVertex = (vertex: Point, samples: number[]) => {
+    let interpolatedX: number;
+    if (Number.isInteger(vertex.x)) {
+        interpolatedX = vertex.x;
+    } else {
+        // if the x is in between two vertices, move it farther from the on with a higher weight
+        const weightLeft = vertex.y === 0 ? samples[0] : samples[3];
+        const weightRight = vertex.y === 0 ? samples[1] : samples[2];
+        interpolatedX = weightLeft / (weightLeft - weightRight);
+    }
+
+    let interpolatedY: number;
+    if (Number.isInteger(vertex.y)) {
+        interpolatedY = vertex.y;
+    } else {
+        const weightTop = vertex.x === 0 ? samples[0] : samples[1];
+        const weightBottom = vertex.x === 0 ? samples[3] : samples[2];
+
+        interpolatedY = weightTop / (weightTop - weightBottom);
+    }
+
+    return { x: interpolatedX, y: interpolatedY };
+};
+
 const marchTheCubes = (samples: number[]): Mesh => {
     const mesh: Mesh = [];
 
@@ -63,12 +94,23 @@ const marchTheCubes = (samples: number[]): Mesh => {
             // 0---1
             // |   |
             // 3---2
-            const meshId = (TL << 0) + (TR << 1) + (BR << 2) + (BL << 3);
+            const meshId =
+                (+(TL > 0) << 0) + (+(TR > 0) << 1) + (+(BR > 0) << 2) + (+(BL > 0) << 3);
 
-            const triangles = MESHLOOKUP[meshId];
+            const lookupTriangles = MESHLOOKUP[meshId];
 
             // translate our mesh by the x and y
-            const translated = triangles.map((m) =>
+            const actualTriangles: Mesh = [];
+            for (const triangle of lookupTriangles) {
+                const interpolatedTri: Point[] = [];
+                for (const vertex of triangle) {
+                    interpolatedTri.push(interpolateVertex(vertex, [TL, TR, BR, BL]));
+                }
+
+                actualTriangles.push(<Triangle>interpolatedTri);
+            }
+
+            const translated = actualTriangles.map((m) =>
                 m.map((p) => ({ x: p.x + x, y: p.y + y }))
             ) as Mesh;
 
@@ -88,7 +130,6 @@ const render = (points: number[], ctx: CanvasRenderingContext2D) => {
     const mesh = marchTheCubes(points);
     ctx.fillStyle = 'red';
 
-    // debugger;
     for (const triangle of mesh) {
         const v = triangle.map((p) => meshToWorldCoord(p));
         ctx.beginPath();
